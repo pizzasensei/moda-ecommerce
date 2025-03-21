@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modéa E-Commerce</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black text-white font-sans">
+    
+    <!-- Navbar -->
+    <nav class="flex justify-between items-center p-6 bg-gray-900">
+        <h1 class="text-2xl font-bold">Modéa</h1>
+        <button onclick="toggleCart()" class="bg-gray-700 px-4 py-2 rounded">Cart (<span id="cart-count">0</span>)</button>
+    </nav>
+
+<!-- Hero Section -->
+<section class="h-screen flex flex-col justify-center items-center text-center px-6 bg-cover bg-center" style="background-image: url('https://images7.alphacoders.com/103/1037514.jpg');">
+    <h1 class="text-5xl md:text-7xl font-bold mb-4 bg-black bg-opacity-50 p-4 rounded">Modéa</h1>
+    <p class="text-lg md:text-2xl text-gray-300 bg-black bg-opacity-50 p-2 rounded">Discover elegance in simplicity.</p>
+</section>
+
+
+    <!-- Products Section -->
+    <section class="py-20 px-6">
+        <h2 class="text-4xl font-semibold text-center mb-10">Our Products</h2>
+        <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto" id="products">
+            <!-- Products will be inserted dynamically -->
+        </div>
+    </section>
+
+    <!-- Cart Section -->
+    <div id="cart" class="fixed right-0 top-0 w-80 h-full bg-gray-900 p-6 hidden">
+        <h2 class="text-2xl font-bold mb-4">Your Cart</h2>
+        <ul id="cart-items" class="mb-4"></ul>
+        <button onclick="checkout()" class="bg-white text-black px-6 py-3 rounded-lg font-semibold">Proceed to Checkout</button>
+        <button onclick="toggleCart()" class="mt-4 text-gray-400">Close</button>
+    </div>
+
+    <!-- Checkout Form -->
+    <div id="checkout-form" class="fixed inset-0 bg-black bg-opacity-80 hidden flex justify-center items-center">
+        <div class="bg-gray-900 p-6 rounded-lg max-w-lg w-full">
+            <h2 class="text-2xl font-bold mb-4">Checkout</h2>
+            <input type="text" id="customer-name" placeholder="Your Name" class="w-full p-3 bg-gray-800 rounded mb-4">
+            <input type="email" id="customer-email" placeholder="Your Email" class="w-full p-3 bg-gray-800 rounded mb-4">
+            <h3 class="text-xl font-semibold mb-2">Choose Payment Method</h3>
+            <select id="payment-method" class="w-full p-3 bg-gray-800 rounded mb-4">
+                <option value="ovo">OVO</option>
+                <option value="dana">Dana</option>
+                <option value="gopay">GoPay</option>
+                <option value="bank">Bank Transfer</option>
+            </select>
+            <button id="place-order" class="bg-white text-black px-6 py-3 rounded-lg font-semibold">Proceed to Payment</button>
+            <button onclick="toggleCheckout()" class="mt-4 text-gray-400">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        const products = [
+    { id: 1, name: "Minimalist Chair", price: 120 },
+    { id: 2, name: "Modern Lamp", price: 80 },
+    { id: 3, name: "Stylish Table", price: 150 }
+];
+
+
+        let cart = {};
+
+        function renderProducts() {
+            const productContainer = document.getElementById("products");
+            productContainer.innerHTML = "";
+            products.forEach(product => {
+                const div = document.createElement("div");
+                div.className = "bg-gray-800 p-6 rounded-lg text-center";
+                div.innerHTML = `
+                    <img src="${product.img}" class="mx-auto mb-4"/>
+                    <h3 class="text-xl font-semibold">${product.name}</h3>
+                    <p class="text-gray-400">$${product.price}</p>
+                    <button onclick="addToCart(${product.id})" class="mt-4 bg-gray-700 px-4 py-2 rounded">Add to Cart</button>
+                `;
+                productContainer.appendChild(div);
+            });
+        }
+
+        function addToCart(productId) {
+            if (!cart[productId]) {
+                cart[productId] = 0;
+            }
+            cart[productId]++;
+            updateCart();
+        }
+
+        function updateCart() {
+            const cartCount = Object.values(cart).reduce((a, b) => a + b, 0);
+            document.getElementById("cart-count").innerText = cartCount;
+            const cartItems = document.getElementById("cart-items");
+            cartItems.innerHTML = "";
+            Object.keys(cart).forEach(id => {
+                if (cart[id] > 0) {
+                    const product = products.find(p => p.id == id);
+                    const li = document.createElement("li");
+                    li.className = "flex justify-between mb-2";
+                    li.innerHTML = `${product.name} (x${cart[id]}) <button onclick="removeFromCart(${id})" class="text-red-500">Remove</button>`;
+                    cartItems.appendChild(li);
+                }
+            });
+        }
+
+        function removeFromCart(productId) {
+            if (cart[productId]) {
+                cart[productId]--;
+                if (cart[productId] <= 0) {
+                    delete cart[productId];
+                }
+                updateCart();
+            }
+        }
+
+        function toggleCart() {
+            document.getElementById("cart").classList.toggle("hidden");
+        }
+
+        function checkout() {
+            document.getElementById("checkout-form").classList.remove("hidden");
+            toggleCart();
+        }
+
+        function toggleCheckout() {
+            document.getElementById("checkout-form").classList.add("hidden");
+        }
+
+        document.getElementById("place-order").addEventListener("click", () => {
+            const paymentMethod = document.getElementById("payment-method").value;
+            let paymentLink = "";
+            
+            switch(paymentMethod) {
+                case "ovo":
+                    paymentLink = "https://example.com/ovo-payment";
+                    break;
+                case "dana":
+                    paymentLink = "https://example.com/dana-payment";
+                    break;
+                case "gopay":
+                    paymentLink = "https://example.com/gopay-payment";
+                    break;
+                case "bank":
+                    paymentLink = "https://example.com/bank-transfer";
+                    break;
+            }
+            
+            window.location.href = paymentLink;
+        });
+
+        renderProducts();
+    </script>
+</body>
+</html>
